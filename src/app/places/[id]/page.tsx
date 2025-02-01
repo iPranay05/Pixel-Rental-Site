@@ -1,87 +1,98 @@
 'use client';
 
-import { useParams } from 'next/navigation';
-import Image from 'next/image';
-import { Pixelify_Sans } from 'next/font/google';
-import { Button } from '@/components/ui/button';
-import Link from 'next/link';
 import { useState } from 'react';
+import { useParams, useRouter } from 'next/navigation';
+import Image from 'next/image';
+import Link from 'next/link';
+import { Button } from '@/components/ui/button';
 import { BookingModal } from '@/components/booking-modal';
 import { useUser } from '@clerk/nextjs';
-import { useRouter } from 'next/navigation';
+import { Pixelify_Sans } from "next/font/google";
 
 const pixelify = Pixelify_Sans({
   subsets: ['latin'],
-  weight: ['400', '500', '600', '700'],
+  weight: ['400'],
+  display: 'swap',
 });
 
-const locations = {
-  1: {
-    name: "Mushroom Kingdom Castle",
-    game: "Super Mario",
-    price: "150",
-    image: "/mario-castle.png",
-    description: "Live like royalty in Princess Peach's iconic castle",
-    features: [
-      "Royal bedrooms",
-      "Mushroom garden",
-      "Star power protection",
-      "Toad butler service"
-    ],
+interface Location {
+  id: string;
+  name: string;
+  game: string;
+  description: string;
+  price: number;
+  image: string;
+  amenities: string[];
+}
+
+const locations: Record<string, Location> = {
+  '1': {
+    id: '1',
+    name: 'Mushroom Kingdom Castle',
+    game: 'Super Mario World',
+    description: 'Experience the magic of Princess Peach\'s iconic castle',
+    price: 150,
+    image: '/mario-castle.png',
     amenities: [
-      "Power-up storage",
-      "Warp pipe transport",
-      "Coin collection",
-      "Boss battle arena"
+      'Mushroom garden',
+      'Toad butler service',
+      'Warp pipe transport',
+      'Boss battle arena',
+      'Coin collection'
     ]
   },
-  2: {
-    name: "Minecraft Village House",
-    game: "Minecraft",
-    price: "80",
-    image: "/minecraft-house.jpg",
-    description: "Cozy village house with farm and crafting tables",
-    features: [
-      "Crafting room",
-      "Storage chests",
-      "Farm plot",
-      "Village view"
-    ],
+  '2': {
+    id: '2',
+    name: 'Minecraft Cottage',
+    game: 'Minecraft',
+    description: 'A cozy cottage built with the finest blocks',
+    price: 80,
+    image: '/minecraft-house.jpg',
     amenities: [
-      "Enchanting table",
-      "Brewing stand",
-      "Furnace",
-      "Bed respawn point"
+      'Crafting table',
+      'Furnace',
+      'Farm plot',
+      'Mine entrance',
+      'Storage chests'
     ]
   },
-  3: {
-    name: "Zelda's Temple",
-    game: "Legend of Zelda",
-    price: "200",
-    image: "/zelda-temple.jpg",
-    description: "Ancient temple with mysterious puzzles and gardens",
-    features: [
-      "Sacred chambers",
-      "Puzzle rooms",
-      "Hidden treasures",
-      "Master sword shrine"
-    ],
+  '3': {
+    id: '3',
+    name: 'Hyrule Temple',
+    game: 'Legend of Zelda',
+    description: 'Ancient temple with breathtaking views of Hyrule',
+    price: 200,
+    image: '/zelda-temple.jpg',
     amenities: [
-      "Heart container storage",
-      "Fairy fountain",
-      "Magic restoration",
-      "Shield protection"
+      'Sacred grounds',
+      'Puzzle rooms',
+      'Master sword shrine',
+      'Fairy fountain',
+      'Royal gardens'
     ]
   }
 };
 
-export default function PlaceDetails() {
+export default function PlacePage() {
   const params = useParams();
   const id = params.id as string;
-  const place = locations[id as keyof typeof locations];
+  const place = locations[id];
   const [isBookingModalOpen, setIsBookingModalOpen] = useState(false);
   const { isSignedIn } = useUser();
   const router = useRouter();
+
+  if (!place) {
+    return (
+      <div className={`${pixelify.className} min-h-screen bg-gradient-custom p-8`}>
+        <div className="max-w-4xl mx-auto text-center">
+          <h1 className="text-3xl font-bold mb-4">Location not found</h1>
+          <Link href="/" className="text-blue-600 hover:text-blue-800">
+            Return to Home
+          </Link>
+        </div>
+      </div>
+    );
+  }
 
   const handleBookClick = () => {
     if (!isSignedIn) {
@@ -91,79 +102,46 @@ export default function PlaceDetails() {
     setIsBookingModalOpen(true);
   };
 
-  if (!place) {
-    return (
-      <div className={`${pixelify.className} min-h-screen flex items-center justify-center`}>
-        <div className="text-center">
-          <h1 className="text-4xl font-bold mb-4">Location not found</h1>
-          <Link href="/">
-            <Button>Return Home</Button>
-          </Link>
-        </div>
-      </div>
-    );
-  }
-
   return (
-    <main className={`${pixelify.className} bg-gradient-to-br from-amber-100 to-teal-100 min-h-screen`}>
+    <main className={`${pixelify.className} min-h-screen bg-gradient-custom`}>
+      <Link href="/" className="inline-block p-4 text-xl hover:text-gray-700">
+        ← Back to Home
+      </Link>
       
-      <div className="pt-20 px-8">
-        <Link href="/" className="text-black hover:underline mb-8 inline-block">
-          ← Back to Home
-        </Link>
-
-        <div className="max-w-6xl mx-auto bg-white/10 backdrop-blur-sm rounded-lg p-8 mt-8">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <div className="relative w-full h-[400px]">
-              <Image
-                src={place.image}
-                alt={place.name}
-                fill
-                style={{ objectFit: 'cover' }}
-                className="rounded-lg"
-                priority
-              />
+      <div className="max-w-6xl mx-auto px-4 py-8">
+        <div className="grid md:grid-cols-2 gap-8">
+          <div>
+            <Image
+              src={place.image}
+              alt={place.name}
+              width={600}
+              height={400}
+              className="rounded-lg shadow-lg"
+            />
+          </div>
+          
+          <div>
+            <h1 className="text-4xl font-bold mb-4">{place.name}</h1>
+            <p className="text-xl mb-6">{place.description}</p>
+            <p className="text-3xl font-bold mb-8">${place.price}/night</p>
+            
+            <div className="space-y-4">
+              <h2 className="text-2xl font-bold">Amenities</h2>
+              <ul className="space-y-2">
+                {place.amenities.map((amenity) => (
+                  <li key={amenity} className="flex items-center space-x-2">
+                    <span>→ {amenity}</span>
+                  </li>
+                ))}
+              </ul>
             </div>
             
-            <div>
-              <h1 className="text-4xl font-bold text-black mb-2">{place.name}</h1>
-              <p className="text-xl text-gray-700 mb-4">{place.game}</p>
-              <p className="text-gray-600 mb-6">{place.description}</p>
-              
-              <div className="mb-6">
-                <h2 className="text-2xl font-bold text-black mb-4">Features</h2>
-                <ul className="grid grid-cols-2 gap-2">
-                  {place.features.map((feature, index) => (
-                    <li key={index} className="flex items-center text-gray-700">
-                      <span className="mr-2">→</span>
-                      {feature}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-
-              <div className="mb-6">
-                <h2 className="text-2xl font-bold text-black mb-4">Amenities</h2>
-                <ul className="grid grid-cols-2 gap-2">
-                  {place.amenities.map((amenity, index) => (
-                    <li key={index} className="flex items-center text-gray-700">
-                      <span className="mr-2">→</span>
-                      {amenity}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-
-              <div className="flex justify-between items-center mt-8">
-                <p className="text-3xl font-bold text-black">${place.price}/night</p>
-                <Button 
-                  className="bg-black text-white px-8 py-4 rounded-lg text-xl hover:bg-gray-800"
-                  onClick={handleBookClick}
-                >
-                  {isSignedIn ? 'Book Now' : 'Sign in to Book'}
-                </Button>
-              </div>
-            </div>
+            <Button 
+              onClick={handleBookClick}
+              className="mt-8 w-full bg-black text-white hover:bg-gray-800"
+            >
+              {isSignedIn ? 'Book Now' : 'Sign in to Book'}
+            </Button>
           </div>
         </div>
       </div>

@@ -8,7 +8,8 @@ import { Pixelify_Sans } from "next/font/google";
 
 const pixelify = Pixelify_Sans({
   subsets: ['latin'],
-  weight: ['400', '500', '600', '700'],
+  weight: ['400'],
+  display: 'swap',
 });
 
 interface Booking {
